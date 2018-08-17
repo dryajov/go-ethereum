@@ -247,6 +247,21 @@ func (c *Config) NodeName() string {
 	return name
 }
 
+// MustekalaNodeName returns the devp2p node identifier.
+func (c *Config) MustekalaNodeName() string {
+	name := "Mustekala-Geth-Bridge"
+
+	if c.UserIdent != "" {
+		name += "/" + c.UserIdent
+	}
+	if c.Version != "" {
+		name += "/v" + c.Version
+	}
+	name += "/" + runtime.GOOS + "-" + runtime.GOARCH
+	name += "/" + runtime.Version()
+	return name
+}
+
 func (c *Config) name() string {
 	if c.Name == "" {
 		progname := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
