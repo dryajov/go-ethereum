@@ -45,7 +45,7 @@ type GetSliceResponseAccount struct {
 // - depth			depth to walk from the slice head
 // - stateRoot		state root of the GetSliceResponse
 // - onlyKeys		omit the blobs in the response
-func (api *PublicDebugAPI) GetSlice(ctx context.Context, path string, depth int, stateRoot string) (GetSliceResponse, error) {
+func (api *PublicDebugAPI) GetSlice(ctx context.Context, path string, depth int, stateRoot string, storage bool) (GetSliceResponse, error) {
 	var timerStart int64
 
 	// check the path parameter
@@ -114,6 +114,10 @@ func (api *PublicDebugAPI) GetSlice(ctx context.Context, path string, depth int,
 	sliceKeys, sliceBlobs := it.Slice(depth, true)
 	response.addTimer("02 fetch-slice-keys", timerStart)
 
+	if len(sliceKeys[0]) < 1 || len(sliceBlobs[0]) < 1 {
+		return response, nil
+	}
+
 	// fill the head field into the response
 	response.TrieNodes.Head[fmt.Sprintf("%x", sliceKeys[0][0])] = fmt.Sprintf("%x", sliceBlobs[0][0])
 
@@ -140,9 +144,9 @@ func (api *PublicDebugAPI) GetSlice(ctx context.Context, path string, depth int,
 		response.MetaData.NodeStats["N02 total-trie-nodes"] = fmt.Sprintf("%d", len(response.TrieNodes.SliceNodes))
 	}
 
-	// TODO
-	// differentiate whether we are dealing with a state or storage slice to perform the recount below
-	// if not, it will blow up when we do slicing for storage trie data
+	if storage == true {
+		return response, nil
+	}
 
 	// TODO
 	// we need to add the smart contract code (when it applies)
